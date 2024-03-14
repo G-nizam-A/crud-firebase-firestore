@@ -1,11 +1,16 @@
-import React from 'react'
+"use client"
+import React, { useState } from 'react'
 import List from './List'
+import { Add } from './Add'
 
 function Dashboard() {
+  const [data, setData] = useState([]);
+
   return (
-    <>
-    <List/>
-    </>
+    <div className='w-[90%] mx-auto'>
+      <Add setData={setData}/>
+      <List data={data} setData={setData}/>
+    </div>
   )
 }
 
