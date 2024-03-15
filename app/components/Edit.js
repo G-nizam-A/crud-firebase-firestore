@@ -26,7 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ProjectSchema } from "@/schema/Schema";
 import { toast } from 'sonner'
-import { doc, setDoc } from "firebase/firestore";
+import {  doc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 
 export function Edit({ eData, setData }) {
@@ -45,8 +45,10 @@ export function Edit({ eData, setData }) {
   );
 }
 
-const Form = React.forwardRef(({ className, eData, setData }, ref) => {
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm({ resolver: zodResolver(ProjectSchema) });
+function Form({ className, eData, setData }) {
+  const { register, handleSubmit, formState: { errors }, reset, watch, setValue  } = useForm({ resolver: zodResolver(ProjectSchema) });
+  console.log('edata',eData);
+
   async function editNewData(data) {
 
     const allData = {
@@ -55,16 +57,15 @@ const Form = React.forwardRef(({ className, eData, setData }, ref) => {
       phone: +data.phone,
       price: +data.price,
       pending_amount: +data.price,
-      project_given_date: new Date().toISOString().split('T')[0],
-      project_submitted_date: null,
+      ...eData,
     };
+    console.log('Data',allData);
 
-    console.log('Data',eData.id, allData);
+    
     try { 
       await setDoc(doc(db, "MyProject", eData.id), allData);
       console.log('Data saved successfully');
       toast.success('Data saved successfully!');
-      console.log('allData', allData.id, 'item.id');
       setData(prevData => prevData.map(item => (item.id === allData.id) ? { ...item, ...allData } : item));
     } catch (error) {
       console.error('Unexpected Error:', error);
@@ -73,7 +74,7 @@ const Form = React.forwardRef(({ className, eData, setData }, ref) => {
   }
 
   return (
-    <form ref={ref} onSubmit={handleSubmit(editNewData)} className={cn("grid items-start gap-4", className)}>
+    <form  onSubmit={handleSubmit(editNewData)} className={cn("grid items-start gap-4", className)}>
       <div className="grid gap-2">
         <Label htmlFor="client_name">Client Name:</Label>
         <Input defaultValue={eData.client_name} type="text" id="client_name" placeholder="Client name" {...register("client_name")}/>
@@ -82,12 +83,10 @@ const Form = React.forwardRef(({ className, eData, setData }, ref) => {
       <div className="grid gap-2">
         <Label htmlFor="email">Email:</Label>
         <Input defaultValue={eData.email} type="email" id="email" placeholder="some@example.com" {...register("email")}/>
-        {errors.email?.message && <span className="text-red-500 text-xs italic"> {errors.email?.message.toString()}</span>}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="phone">Phone:</Label>
         <Input defaultValue={eData.phone} type="text" id="phone" placeholder="9876543210" {...register("phone")}/>
-        {errors.phone?.message && <span className="text-red-500 text-xs italic"> {errors.phone?.message.toString()}</span>}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="project_name">Project Name</Label>
@@ -95,17 +94,23 @@ const Form = React.forwardRef(({ className, eData, setData }, ref) => {
         {errors.project_name?.message && <span className="text-red-500 text-xs italic"> {errors.project_name?.message.toString()}</span>}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="price ">Price: </Label>
+        <Label htmlFor="price">Price: </Label>
         <Input defaultValue={eData.price} type="text" id="price " placeholder="Project price" {...register("price")}/>
         {errors.price?.message && <span className="text-red-500 text-xs italic"> {errors.price?.message.toString()}</span>}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="price ">Status: </Label>
-        <Select defaultValue={eData.status} id="status " {...register("status")}>
+        <Select defaultValue={eData.status} id="status" {...register("status")} onChange={(e) => {
+          const selectedStatus = e.target.value;
+          setValue("status", selectedStatus);
+        }}>
+        {/* <Select defaultValue={eData.status} id="status"  onValueChange={field.onChange} {...register("status")}> */}
+        {/* <Label htmlFor="status">Status: </Label>
+        <Select defaultValue={eData.status} id="status" {...register("status")}> */}
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select a status" />
           </SelectTrigger>
-        <SelectContent>
+        <SelectContent >
             <SelectGroup>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Ongoing">Ongoing</SelectItem>
@@ -118,5 +123,5 @@ const Form = React.forwardRef(({ className, eData, setData }, ref) => {
         <Button type="submit">Save</Button>
       </DialogFooter>
     </form>
- );
-});
+  );
+}

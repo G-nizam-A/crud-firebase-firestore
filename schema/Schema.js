@@ -5,5 +5,6 @@ export const ProjectSchema = z.object({
     project_name: z.string().min(1, { message: "Project name is required", }).max(100),
     price: z.string().min(1, { message: "Price name is required", }).max(7, { message: "Enough, thank you", }),
     email: z.string().default(''),
+    status: z.string().default('Pending'),
     phone: z.coerce.number().default(0),
 });
