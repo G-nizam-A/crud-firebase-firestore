@@ -9,29 +9,34 @@ import {
 } from "@/components/ui/table"
 import { collection, getDocs } from "firebase/firestore";
 import { db } from '@/app/config/firebaseConfig'
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Delete } from "./Delete";
 import { Badge } from "@/components/ui/badge";
 import { Edit } from "./Edit";
+import { SkeletonCard } from "@/components/Skeleton";
 
 export default function List({ data, setData }) {
+  const [loading, setLoading] = useState(true);
   const getEmployees = async () => {
     try {
-      console.log('iam server');
       const querySnapshot = await getDocs(collection(db, "MyProject"));
       const newData = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
       setData(newData);
     } catch (e) {
       console.error("Error reading document: ", e);
+    } finally {
+      setLoading(false); 
     }
   }
 
   useEffect(() => {
-    getEmployees()
+    if(!loading){
+      getEmployees();
+    }
   }, []);
 
   return (
-    <Table>
+    <Table className="border-t-2">
       <TableHeader>
         <TableRow className=" text-base">
           <TableHead className="w-[60px]">#</TableHead>
@@ -43,7 +48,18 @@ export default function List({ data, setData }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item, index) => (
+      {loading ? (
+        <TableRow>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+        <TableCell><SkeletonCard /></TableCell>
+      </TableRow>
+       ) : data.length > 0 ? (
+        data.map((item, index) => (
           <TableRow key={index}>
             <TableCell className="font-medium">{index + 1}</TableCell>
             <TableCell>{item.client_name}</TableCell>
@@ -55,7 +71,14 @@ export default function List({ data, setData }) {
             <TableCell className="text-right w-0 p-0"><Edit eData={item} setData={setData}/></TableCell>
             <TableCell className="text-left w-0"><Delete id={item.id} setData={setData} /></TableCell>
           </TableRow>
-        ))}
+          ))
+          ) : (
+          <TableRow>
+            <TableCell colSpan={7} className="text-center">
+              No data found
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   )

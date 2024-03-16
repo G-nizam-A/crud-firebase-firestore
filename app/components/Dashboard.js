@@ -2,6 +2,7 @@
 import React, { useState } from 'react'
 import List from './List'
 import { Add } from './Add'
+import { SkeletonCard } from '@/components/Skeleton';
 
 function Dashboard() {
   const [data, setData] = useState([]);
