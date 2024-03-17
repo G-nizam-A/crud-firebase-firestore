@@ -17,7 +17,7 @@ import { SkeletonCard } from "@/components/Skeleton";
 
 export default function List({ data, setData }) {
   const [loading, setLoading] = useState(true);
-  const getEmployees = async () => {
+  const fetchData = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "MyProject"));
       const newData = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data()}));
@@ -30,9 +30,7 @@ export default function List({ data, setData }) {
   }
 
   useEffect(() => {
-    if(!loading){
-      getEmployees();
-    }
+      fetchData();
   }, []);
 
   return (
